@@ -1,77 +1,23 @@
-import 'dart:io';
+// import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
-
-void main() {
-  // runApp(const MyHomePage());
+import 'pages/welcome.dart';
+import 'package:firebase_core/firebase_core.dart';
+// Firebase web configuration
+const firebaseOptions = FirebaseOptions(
+  apiKey: "AIzaSyAzw5sNPyHoWhHEOsLr_U6ww_IqP5cnVoE",
+    authDomain: "solutionc-b2fa7.firebaseapp.com",
+    projectId: "solutionc-b2fa7",
+    storageBucket: "solutionc-b2fa7.firebasestorage.app",
+    messagingSenderId: "769538353402",
+    appId: "1:769538353402:web:1a57b18763c4d0a4968143",
+    measurementId: "G-55F4J5DJL2"
+);
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); 
+  await Firebase.initializeApp(options: firebaseOptions); 
 
   runApp(MaterialApp(
-    home: MyHomePage(),
+    home: WelcomePage(),
+    debugShowCheckedModeBanner: false,
   ));
-}
-
-class MyHomePage extends StatefulWidget {
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  String stringOutput = "Text Output";
-  final TextEditingController _textController = TextEditingController();
-
-  void geminiOutput() async {
-
-    if(_textController.text.isEmpty){
-      return;
-    }
-    final content = [Content.text(_textController.text)];
-    final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: "AIzaSyB5Scfwg7YUuBVwsqJpJCkbVbCEv7pHCv8");
-    final response = await model.generateContent(content);
-    print(response.text);
-
-    setState(() {
-      stringOutput = response.text!;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Demo App"),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Expanded(
-                child: SingleChildScrollView(
-                  child: Text(
-                    stringOutput,
-                  ),
-                )
-              ),
-
-            TextField(
-              controller: _textController,
-              decoration: InputDecoration(
-                hintText:  "Enter text",
-              ),
-              onChanged: (value) {
-                setState(() {
-                  print(_textController.text);
-                });
-              },
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: ElevatedButton(
-        onPressed: geminiOutput,
-        child: Text("Gemini Api"),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
-  }
 }
