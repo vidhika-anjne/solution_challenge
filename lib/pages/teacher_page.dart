@@ -1,11 +1,4 @@
 import 'package:flutter/material.dart';
-//import './teacher_page/teacher_page.dart';
-
-// At the top of teacher_page.dart
-//library teacher_page;
-
-//export 'teacher_page.dart';
-
 
 class TeacherHomePage extends StatefulWidget {
   @override
