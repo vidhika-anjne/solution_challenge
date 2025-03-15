@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import FirebaseAuth
 import 'login.dart'; // Import the LoginPage
 import 'homepage.dart'; // Import your HomePage here
+import 'teacher_page.dart';
 
 class SignupPage extends StatefulWidget {
   @override
@@ -83,6 +84,12 @@ class _SignupPageState extends State<SignupPage> {
         MaterialPageRoute(
             builder: (context) => MyHomePage()), // Redirect to MyHomePage
       );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) => TeacherHomePage(),), // Redirect to MyHomePage
+      );
+
     } catch (e) {
       print("Signup failed: $e");
       String errorMessage = "An error occurred during signup.";
