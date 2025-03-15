@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import FirebaseAuth
 import 'homepage.dart'; // Import the HomePage screen
 import 'signup.dart'; // Import the HomePage screen
+import 'teacher_page.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -42,6 +43,11 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => MyHomePage()),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TeacherHomePage(),), // Redirect to MyHomePage
       );
     } catch (e) {
       print("Login failed: $e");

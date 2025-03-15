@@ -16,6 +16,7 @@ class ClassesScreen extends StatelessWidget {
         title: Text("Select Your Class"),
         backgroundColor: Colors.blue,
       ),
+
       body: ListView.builder(
         itemCount: classList.length,
         itemBuilder: (context, index) {
