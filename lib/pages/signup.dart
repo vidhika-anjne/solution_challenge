@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import FirebaseAuth
-import 'login.dart'; // Import the LoginPage
-import 'homepage.dart'; // Import your HomePage here
-import 'teacher_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'login.dart';
+import 'homepage.dart';
+import 'package:flutter_svg/svg.dart';
 
 class SignupPage extends StatefulWidget {
   @override
@@ -15,47 +15,11 @@ class _SignupPageState extends State<SignupPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  // Function to validate email and password
-  String? validateEmail(String email) {
-    if (!email.contains('@gmail.com')) {
-      return 'Please enter a valid Gmail address.';
-    }
-    return null;
-  }
-
-  String? validatePassword(String password) {
-    if (password.length < 4) {
-      return 'Password must be at least 4 characters.';
-    }
-    if (!RegExp(r'(?=.*[0-9])').hasMatch(password)) {
-      return 'Password must contain at least one number.';
-    }
-    if (!RegExp(r'(?=.*[!@#$%^&*])').hasMatch(password)) {
-      return 'Password must contain at least one special character.';
-    }
-    return null;
-  }
-
   Future<void> _signup() async {
     try {
-      final email = _emailController.text;
-      final password = _passwordController.text;
-      final confirmPassword = _confirmPasswordController.text;
-
-      // Validate email and password
-      if (validateEmail(email) != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(validateEmail(email)!)),
-        );
-        return;
-      }
-
-      if (validatePassword(password) != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(validatePassword(password)!)),
-        );
-        return;
-      }
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
+      final confirmPassword = _confirmPasswordController.text.trim();
 
       if (password != confirmPassword) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -64,160 +28,179 @@ class _SignupPageState extends State<SignupPage> {
         return;
       }
 
-      // Create user with Firebase Authentication
       UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      await _auth.createUserWithEmailAndPassword(email: email, password: password);
 
-      // Show a success message
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(
-                'Signup Successful! Welcome ${userCredential.user?.email}')),
+        SnackBar(content: Text('Signup Successful! Welcome ${userCredential.user?.email}')),
       );
 
-      // Navigate to Home Page
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-            builder: (context) => MyHomePage()), // Redirect to MyHomePage
+        MaterialPageRoute(builder: (context) => MyHomePage()), // Redirect to HomePage
       );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) => TeacherHomePage(),), // Redirect to MyHomePage
-      );
-
     } catch (e) {
       print("Signup failed: $e");
-      String errorMessage = "An error occurred during signup.";
-
-      if (e is FirebaseAuthException) {
-        switch (e.code) {
-          case 'weak-password':
-            errorMessage = 'The password provided is too weak.';
-            break;
-          case 'email-already-in-use':
-            errorMessage =
-                'The email address is already in use by another account.';
-            break;
-          case 'invalid-email':
-            errorMessage = 'The email address is not valid.';
-            break;
-          default:
-            errorMessage = 'An unknown error occurred.';
-            break;
-        }
-      }
-
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
+        SnackBar(content: Text("Error: ${e.toString()}")),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    var screenSize = MediaQuery.of(context).size;
+    bool isDesktop = screenSize.width > 600;
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Signup',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-              textAlign: TextAlign.center,
+      body: Stack(
+        children: [
+          // Background Image
+          Positioned.fill(
+            child: Image.asset(
+              'images/desktop_welcome2.jpg', // Use a high-quality AI/Education theme image
+              fit: BoxFit.cover,
             ),
-            SizedBox(height: 40),
-            // Email field
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            SizedBox(height: 20),
-            // Enter password field
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(
-                labelText: 'Enter Password',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              obscureText: true, // Hides the password
-            ),
-            SizedBox(height: 20),
-            // Confirm password field
-            TextField(
-              controller: _confirmPasswordController,
-              decoration: InputDecoration(
-                labelText: 'Confirm Password',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              obscureText: true, // Hides the password
-            ),
-            SizedBox(height: 30),
-            // Signup button
-            ElevatedButton(
-              onPressed: _signup,
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                backgroundColor: Colors.green,
-              ),
-              child: Text(
-                'Signup',
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-            SizedBox(height: 20),
-            // Existing user? Login here
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Existing user? ',
-                  style: TextStyle(fontSize: 16, color: Colors.black),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    // Navigate to Login Page
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginPage()),
-                    );
-                  },
-                  child: Text(
-                    'Login here',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
+          ),
+
+          Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: isDesktop ? 100 : 20),
+              child: Container(
+                width: isDesktop ? 900 : double.infinity,
+                height: isDesktop ? 500 : null,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9), // Glass effect
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 10,
+                      spreadRadius: 2,
                     ),
-                  ),
+                  ],
                 ),
-              ],
+                child: Row(
+                  children: [
+                    // Left Side Image (Only for Desktop)
+                    if (isDesktop)
+                      Expanded(
+                        child: Container(
+                          child : SvgPicture.asset(
+                            'images/sigup.svg',
+                            width: screenSize.width * 0.35,
+                            height: screenSize.height * 0.6,
+                            fit: BoxFit.contain,
+                            placeholderBuilder: (context) => CircularProgressIndicator(),
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.horizontal(left: Radius.circular(20)),
+                          ),
+                        ),
+                      ),
+
+                    // Right Side - Signup Form
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.all(30),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'Create an Account',
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blueAccent,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 20),
+
+                            // Email Field
+                            _buildTextField(_emailController, 'Email', Icons.email, false),
+
+                            SizedBox(height: 15),
+
+                            // Password Field
+                            _buildTextField(_passwordController, 'Password', Icons.lock, true),
+
+                            SizedBox(height: 15),
+
+                            // Confirm Password Field
+                            _buildTextField(_confirmPasswordController, 'Confirm Password',
+                                Icons.lock_outline, true),
+
+                            SizedBox(height: 25),
+
+                            // Signup Button
+                            ElevatedButton(
+                              onPressed: _signup,
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(vertical: 14),
+                                backgroundColor: Colors.blue,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: Text('Sign Up',
+                                  style: TextStyle(fontSize: 18,
+                                  // fontFamily: 'Nexa',
+                                      fontWeight: FontWeight.bold,
+                                  color: Colors.white),
+                              ),
+                            ),
+
+                            SizedBox(height: 15),
+
+                            // Existing User? Login Here
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("Already have an account? ", style: TextStyle(fontSize: 14)),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => LoginPage()),
+                                    );
+                                  },
+                                  child: Text(
+                                    "Login",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blueAccent,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(
+      TextEditingController controller, String hintText, IconData icon, bool isObscure) {
+    return TextField(
+      controller: controller,
+      obscureText: isObscure,
+      decoration: InputDecoration(
+        hintText: hintText,
+        prefixIcon: Icon(icon, color: Colors.blue),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );

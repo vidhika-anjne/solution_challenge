@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import FirebaseAuth
-import 'homepage.dart'; // Import the HomePage screen
-import 'signup.dart'; // Import the HomePage screen
+import 'package:firebase_auth/firebase_auth.dart';
+import 'signup.dart';
+import 'teacher_page.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -15,8 +16,8 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _signIn() async {
     try {
-      final email = _emailController.text;
-      final password = _passwordController.text;
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
 
       if (email.isEmpty || password.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -31,17 +32,16 @@ class _LoginPageState extends State<LoginPage> {
         password: password,
       );
 
-      // Show a success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                'Login Successful! Welcome ${userCredential.user?.email}')),
+          content: Text('Login Successful! Welcome ${userCredential.user?.email}'),
+        ),
       );
 
-      // Navigate to the HomePage screen
+      // Navigate to TeacherHomePage after successful login
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => MyHomePage()),
+        MaterialPageRoute(builder: (context) => TeacherHomePage()),
       );
     } catch (e) {
       print("Login failed: $e");
@@ -53,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
             errorMessage = 'No user found for that email.';
             break;
           case 'wrong-password':
-            errorMessage = 'Wrong password provided for that user.';
+            errorMessage = 'Incorrect password provided.';
             break;
           case 'invalid-email':
             errorMessage = 'The email address is not valid.';
@@ -72,88 +72,154 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    var screenSize = MediaQuery.of(context).size;
+    bool isDesktop = screenSize.width > 600;
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Login',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-              textAlign: TextAlign.center,
+      body: Stack(
+        children: [
+          // Background Image
+          Positioned.fill(
+            child: Image.asset(
+              'images/desktop_welcome2.jpg', // AI-themed or educational background
+              fit: BoxFit.cover,
             ),
-            SizedBox(height: 40),
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              obscureText: true,
-            ),
-            SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: _signIn,
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                backgroundColor: Colors.blue,
-              ),
-              child: Text(
-                'Login',
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'First time here? ',
-                  style: TextStyle(fontSize: 16, color: Colors.black),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    // Navigate to Signup Page
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SignupPage()),
-                    );
-                  },
-                  child: Text(
-                    'Signup here',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
+          ),
+
+          Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: isDesktop ? 100 : 20),
+              child: Container(
+                width: isDesktop ? 900 : double.infinity,
+                height: isDesktop ? 500 : null,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9), // Glass effect
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 10,
+                      spreadRadius: 2,
                     ),
-                  ),
+                  ],
                 ),
-              ],
+                child: Row(
+                  children: [
+                    // Left Side Image (Only for Desktop)
+                    if (isDesktop)
+                      Expanded(
+                        child: Container(
+                          child: SvgPicture.asset(
+                            'images/login.svg',
+                            width: screenSize.width * 0.35,
+                            height: screenSize.height * 0.6,
+                            fit: BoxFit.contain,
+                            placeholderBuilder: (context) => CircularProgressIndicator(),
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.horizontal(left: Radius.circular(20)),
+                          ),
+                        ),
+                      ),
+
+                    // Right Side - Login Form
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.all(30),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'Welcome Back!',
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blueAccent,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 20),
+
+                            // Email Field
+                            _buildTextField(_emailController, 'Email', Icons.email, false),
+
+                            SizedBox(height: 15),
+
+                            // Password Field
+                            _buildTextField(_passwordController, 'Password', Icons.lock, true),
+
+                            SizedBox(height: 25),
+
+                            // Login Button
+                            ElevatedButton(
+                              onPressed: _signIn,
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(vertical: 14),
+                                backgroundColor: Colors.blue,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: Text(
+                                'Login',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(height: 15),
+
+                            // New User? Sign Up
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("New here? ", style: TextStyle(fontSize: 14)),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => SignupPage()),
+                                    );
+                                  },
+                                  child: Text(
+                                    "Sign up",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blueAccent,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(
+      TextEditingController controller, String hintText, IconData icon, bool isObscure) {
+    return TextField(
+      controller: controller,
+      obscureText: isObscure,
+      decoration: InputDecoration(
+        hintText: hintText,
+        prefixIcon: Icon(icon, color: Colors.blue),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );
